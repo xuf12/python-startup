@@ -1,0 +1,104 @@
+---
+title: "python-startup"
+format: html
+editor: visual
+jupyter: python3
+---
+
+## Develop and deploy a Python Streamlit app in VS Code
+
+In this tutorial, we are going to edit and run a Streamlit app in a VS Code session from Posit Workbench and deploy it to Posit Connect.
+
+For convenience, we are going to use the sample code from [the official Streamlit tutorial](https://docs.streamlit.io/library/get-started/create-an-app#lets-put-it-all-together). First we launch a VS Code session from Workbench.
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%202.29.17%20PM.png)
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%202.29.31%20PM.png)
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%202.29.47%20PM.png)
+
+After the VS Code session becomes active, we can either click on the session to join or if the "Join session when ready" option is enabled, it will join the session automatically.
+
+VS Code needs to open a project folder in each workspace. We can create a folder called `streamlit` from the integrated terminal by typing `mkdir streamlit`. We can use the shortcut "ctrl + \`" to launch the terminal.
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%202.44.23%20PM.png)
+
+Once the project folder is created, we can open it so it appears in File Explore (the left pane).![](screenshots/Screen%20Shot%202023-01-19%20at%203.18.42%20PM.png)
+
+Now we need to create a Python script `uber_pickups.py` and copy and paste the code content from [the tutorial](https://docs.streamlit.io/library/get-started/create-an-app#lets-put-it-all-together) there. The folder looks like this after the script is saved.
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%202.21.21%20PM.png)
+
+Now we have the code, we need to set up the virtual environment for the app to run.
+
+## Set up the virtual environment
+
+As suggested in the [Iron Law of Python Management](https://solutions.posit.co/write-code/minimum-viable-python/installing-packages/#the-iron-law-of-python-management), each Python project should have its own virtual environment. We can create and activate a virtual environment in the streamlit folder
+
+``` bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+We can verify whether pip is indeed coming from the virtual environment we are in with:
+
+`which pip`
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%203.27.58%20PM.png)
+
+Now we can run the following commands to upgrade pip, wheel, setuptools, and install streamlit and pandas as project libraries.
+
+`python -m pip install --upgrade pip wheel setuptools`
+
+`python -m pip install streamlit pandas`
+
+After the libraries are installed, we can check them with `pip freeze` and create a `requirements.txt` file to store the installed package versions for future reference.
+
+`pip freeze > requirements.txt`
+
+Now we should see the requiremets.txt file containing all the libraries and their dependencies installed for this project (not all libraries are shown in the screenshot).
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%203.40.57%20PM.png)
+
+One last thing before we run the app is that we need to make sure the extension Posit Workbench is installed so the app can be viewed properly via a proxied server. You can see the Posit Workbench tab at the bottom of the activity bar on the left. All the installed VS Code extensions are in the extension tab.
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%203.36.07%20PM.png)
+
+## Run the app and deploy to Posit Connect
+
+Now let's run the app with `streamlit run uber_pickups.py` from the terminal.
+
+You will see the proxied server links in the Posit Workbench extension.
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%203.48.39%20PM.png)
+
+Clicking on the top link will open the app.
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%203.56.40%20PM.png)
+
+Now we see that the app works, we can stop the proxied server by closing the link in the Proxied Server pane, or simply Ctrl + C in the terminal.
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%203.58.48%20PM.png)
+
+To deploy the app to Posit Connect, all we need is the rsconnect-python CLI. It can be either centrally installed on the Workbench by the admin, or individually by the user with a command like `python -m pip install rsconnect-python`
+
+In this example we installed it in the virtual environment.
+
+    (.venv) xuf12@ip-172-31-18-7:~/streamlit$ which rsconnect
+    /home/xuf12/streamlit/.venv/bin/rsconnect
+
+The [Connect User Guide](https://docs.posit.co/connect/user/publishing-cli-apps/) has more detailed examples on how to deploy different Python contents to Connect. [After configuring the Connect server url and API key](https://docs.posit.co/connect/user/connecting-cli/), we can deploy the app with this line of code.
+
+`rsconnect deploy streamlit . -e uber_pickups.py -t "Uber pickups" -p .venv/bin/python`
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%204.16.11%20PM.png)
+
+The app is now viewable on Connect.
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%204.16.48%20PM.png)
+
+Lastly, we can also create a `manifest.json` file for git-backed deployment in the future.
+
+`rsconnect write-manifest streamlit .`
+
+![](screenshots/Screen%20Shot%202023-01-19%20at%204.25.33%20PM.png)
